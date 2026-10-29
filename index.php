@@ -1,0 +1,8 @@
+<?php
+require_once __DIR__.'/inc/common.php';require_employee();
+$rows=db()->query("SELECT r.*, c.customer_code,c.full_name,m.model_name, (SELECT COUNT(*) FROM cars v WHERE v.model_id=r.model_id AND v.status='SAN_SANG') AS available FROM rental_requests r JOIN customers c ON c.id=r.customer_id JOIN car_models m ON m.id=r.model_id ORDER BY r.id DESC")->fetchAll();
+page_start('Yêu cầu thuê');?>
+<div class="heading"><div><span class="eyebrow">QUẢN LÝ THUÊ XE</span><h1>Yêu cầu lập hợp đồng</h1><p>Xin chào, <?=esc($_SESSION['employee_name'])?>. Chọn một yêu cầu để kiểm tra hồ sơ và xe.</p></div><a class="btn secondary" href="contracts.php">Xem hợp đồng</a></div>
+<div class="stats"><div class="stat"><span>Tổng yêu cầu</span><b><?=count($rows)?></b></div><div class="stat"><span>Đang chờ xử lý</span><b><?=count(array_filter($rows,fn($r)=>$r['status']==='CHO_XU_LY'))?></b></div></div>
+<div class="card tablewrap"><table><thead><tr><th>Mã yêu cầu</th><th>Khách hàng</th><th>Mẫu xe đã chọn</th><th>Xe sẵn sàng</th><th>Trạng thái</th><th></th></tr></thead><tbody><?php foreach($rows as $r):?><tr><td><strong><?=esc($r['request_code'])?></strong></td><td><?=esc($r['customer_code'].' · '.$r['full_name'])?></td><td><?=esc($r['model_name'])?></td><td><?=esc($r['available'])?></td><td><span class="pill"><?=esc($r['status']==='CHO_XU_LY'?'Chờ xử lý':'Đã lập hợp đồng')?></span></td><td><?php if($r['status']==='CHO_XU_LY'):?><a class="textlink" href="contract_new.php?request=<?=intval($r['id'])?>">Lập hợp đồng →</a><?php else:?>Hoàn tất<?php endif;?></td></tr><?php endforeach;?></tbody></table></div>
+<?php page_end(); ?>
